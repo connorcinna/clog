@@ -11,4 +11,4 @@ clog: $(SRC)/clog.c
 
 all: dirs clog 
 clean: 
-	rm -f $(BUILD)/*
+	rm -rf $(BUILD)
