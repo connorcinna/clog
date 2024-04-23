@@ -95,19 +95,19 @@ void set_print_color(log_severity_t level)
     switch (level) 
     {
         case INFO:
-            printf("%s",log_color[INFO]);
+            printf("%s", log_color[INFO]);
             break;
         case WARN:
-            printf("%s",log_color[WARN]);
+            printf("%s", log_color[WARN]);
             break;
         case ERROR:
-            printf("%s",log_color[ERROR]);
+            printf("%s", log_color[ERROR]);
             break;
         case FATAL:
-            printf("%s",log_color[FATAL]);
+            printf("%s", log_color[FATAL]);
             break;
         default:
-            printf("%s",log_color[DEFAULT]);
+            printf("%s", log_color[DEFAULT]);
             break;
     }
 }
