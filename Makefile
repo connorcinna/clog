@@ -2,7 +2,6 @@ CC=gcc -D_XOPEN_SOURCE_EXTENDED
 CFLAGS=-c -std=c99 -Wall -Iinclude
 SRC=$(CURDIR)/src
 BUILD=$(CURDIR)/bin
-INC=$(CURDIR)/include
 
 dirs: 
 	mkdir -p $(BUILD)
