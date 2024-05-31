@@ -1,41 +1,54 @@
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#define getcwd _getcwd
+#elif __linux__
+#include <stdarg.h>
+#include <unistd.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 #include "clog.h"
 
-const char* log_color[5] = 
+const char* log_color[5] =
 {
     "\033[0;37m", //white
     "\033[0;33m", //yellow
     "\033[0;35m", //purple
     "\033[0;31m", //red
-    "\033[0m"     //reset to default 
+    "\033[0m"     //reset to default
 };
 
 char cwd[1024];
 
 //TODO: this only works when running it from the main directory - maybe pass absolute path, or check
-//if the current directory has a log directory in it, which should be the case if running from root dir 
+//if the current directory has a log directory in it, which should be the case if running from root dir
 void init_log_path(void)
 {
-#ifdef __linux__
-    if (!getcwd(cwd, sizeof(cwd)))
+	struct stat st = {0};
+	if (stat("log", &st) == -1)
+	{
+		mkdir("log", 0755);
+	}
+	if (!getcwd(cwd, sizeof(cwd)))
     {
         printf("Unable to get current working directory: %s\n", strerror(errno));
 		exit(-1);
     }
+#ifdef __linux__
     strcat(cwd, "/log/debug.log");
 #elif _WIN32
-	strcat(cwd, "debug.log");
+	strcat(cwd, "\\log\\debug.log");
 #else
 #endif
 }
 
-char* log_prefix(char const* filename)
+char* log_prefix(char const* filename, int line)
 {
 	char out[512];
 	time_t raw_time = time(NULL);
@@ -45,12 +58,16 @@ char* log_prefix(char const* filename)
 	strcpy(out, str_time);
 	strcat(out, " ");
 	strcat(out, filename);
+	char line_str[4];
+	sprintf(line_str, "%d", line);
+	strcat(out, ":");
+	strcat(out, line_str);
 	char* ret = malloc(sizeof(out));
 	memcpy(ret, out, sizeof(out));
 	return ret;
 }
 
-void debug_log(log_severity_t level, char const* filename, const char* msg, ...)
+void debug_log(log_severity_t level, char const* filename, int line, char* msg, ...)
 {
     if (cwd[0] == '\0')
     {
@@ -58,22 +75,22 @@ void debug_log(log_severity_t level, char const* filename, const char* msg, ...)
     }
     FILE* out;
     set_print_color(level);
-    //get current time
-	//initialize the format argument array
+	//realloc msg to include newline character
+	//this is a design decision to to make sure each log message is on its own line
 	va_list argp;
 	va_start(argp, msg);
     //make a copy of the format arguments - used when writing to the file
     va_list copy;
     va_copy(copy, argp);
-    //print timestamp and file this came from 
-	char* pre = log_prefix(filename);
+    //print timestamp and file this came from
+	char* pre = log_prefix(filename, line);
 	printf("[ %s ] ", pre);
 	//print formatted string
     vprintf(msg, argp);
     //reset print color back to default
     set_print_color(DEFAULT);
     //open cwd, write the same message
-	if (!(out = fopen(cwd, "a"))) 
+	if (!(out = fopen(cwd, "a")))
     {
         printf("Unable to open file %s: %s\n", cwd, strerror(errno));
     }
@@ -90,7 +107,7 @@ void debug_log(log_severity_t level, char const* filename, const char* msg, ...)
     va_end(copy);
 }
 
-void set_print_color(log_severity_t level) 
+void set_print_color(log_severity_t level)
 {
     switch (level) 
     {
