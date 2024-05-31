@@ -9,7 +9,7 @@ cd clog
 make all
 ```
 
-**use**
+**use**  
 The 4 log levels are   
 ```
 INFO,

@@ -26,8 +26,6 @@ const char* log_color[5] =
 
 char cwd[1024];
 
-//TODO: this only works when running it from the main directory - maybe pass absolute path, or check
-//if the current directory has a log directory in it, which should be the case if running from root dir
 void init_log_path(void)
 {
 	struct stat st = {0};
